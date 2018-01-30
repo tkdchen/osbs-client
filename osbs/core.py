@@ -15,6 +15,7 @@ import base64
 import logging
 from osbs.kerberos_ccache import kerberos_ccache_init
 from osbs.build.build_response import BuildResponse
+from osbs.build.build_config_response import BuildConfigResponse
 from osbs.constants import (DEFAULT_NAMESPACE, BUILD_FINISHED_STATES, BUILD_RUNNING_STATES,
                             WATCH_MODIFIED, WATCH_DELETED,
                             SERVICEACCOUNT_SECRET, SERVICEACCOUNT_TOKEN,
@@ -352,27 +353,25 @@ class Openshift(object):
 
         return items[0]
 
-    def get_build_config_by_labels_filtered(self, label_selectors, filter_key, filter_value):
+    def list_build_configs(self, triggers=False):
         """
-        Returns a build config matching the given label selectors, filtering against
-        another predetermined value. This method will raise OsbsException
-        if not exactly one build config is found.
-        """
-        items = self.get_all_build_configs_by_labels(label_selectors)
+        List BuildConfigs
 
-        if not items:
-            raise OsbsException(
-                "Build config not found for labels: %r" %
-                (label_selectors, ))
-        if filter_value is not None:
-            for build_config in items:
-                match_value = graceful_chain_get(build_config, *filter_key.split('.'))
-                if filter_value == match_value:
-                    return build_config
-        if len(items) > 1:
-            raise OsbsException(
-                "More than one build config found for labels: %r" %
-                (label_selectors, ))
+        :param triggers: bool, select only BuildConfigs having triggers defined
+        :return: BuildConfigResponse iterator
+        """
+        url = self._build_url("buildconfigs/")
+        response = self._get(url)
+        check_response(response)
+
+        build_configs = []
+        for item in response.json()['items']:
+            bc = BuildConfigResponse(item)
+            if triggers and not bc.triggers:
+                continue
+            build_configs.append(bc)
+
+        return build_configs
 
     def create_build_config(self, build_config_json):
         """

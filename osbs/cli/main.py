@@ -159,6 +159,13 @@ def cmd_list_builds(args, osbs):
         tp.render()
 
 
+def cmd_list_build_configs(args, osbs):
+    build_configs = osbs.list_build_configs(triggers=args.triggers)
+
+    for each in build_configs:
+        print(each.name)
+
+
 def make_digests_str(digests):
     if digests is not None:
         try:
@@ -582,6 +589,17 @@ def cli():
                                     help="fetch builds list from JSON file instead of from server")
 
     list_builds_parser.set_defaults(func=cmd_list_builds)
+
+    list_build_configs_parser = subparsers.add_parser(
+        str_on_2_unicode_on_3('list-build-configs'),
+        help='list build configs in OSBS',
+        description='list all build configs in the namespace')
+
+    list_build_configs_parser.add_argument(
+        "--triggers", help="list only build configs with triggers", action="store_true",
+        default=False)
+
+    list_build_configs_parser.set_defaults(func=cmd_list_build_configs)
 
     watch_build_parser = subparsers.add_parser(str_on_2_unicode_on_3('watch-build'),
                                                help='wait till build finishes')
