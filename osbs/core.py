@@ -58,7 +58,7 @@ class Openshift(object):
         self._os_api_version = openshift_api_version
         self._os_oauth_url = openshift_oauth_url
         self.namespace = namespace
-        self.verbose = verbose
+        self.verbose = True
         self.verify_ssl = verify_ssl
         self._con = HttpSession(verbose=self.verbose)
         self.retries_enabled = True
@@ -822,7 +822,7 @@ class Openshift(object):
                 break
 
             if changetype == WATCH_ERROR:
-                logger.error("Error watching ImageStream")
+                logger.error("Error watching ImageStream: %s", obj)
                 break
 
             if changetype == WATCH_MODIFIED:
