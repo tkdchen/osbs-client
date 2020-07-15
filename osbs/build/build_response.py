@@ -112,6 +112,7 @@ class BuildResponse(object):
         error_reason = self.get_error_reason()
         if error_reason:
             error_message = error_reason.get('pod') or None
+            logger.error('pod error: %s', error_message)
             if error_message:
                 return "Error in pod: %s" % error_message
             plugin = error_reason.get('plugin')[0] or None
